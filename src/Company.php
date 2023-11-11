@@ -42,7 +42,7 @@ final class Company
         $item->quality = min(50, $item->quality + 1);
 
         if ($item->sellIn < 0) {
-            // Quality increases twice as fast after sellIn has passed
+
             $item->quality = min(50, $item->quality + 1);
         }
     }
@@ -52,7 +52,7 @@ final class Company
         $item->sellIn--;
 
         if ($item->sellIn < 0) {
-            // Quality drops to 0 after the concert
+
             $item->quality = 0;
         } elseif ($item->sellIn <= 5) {
             $item->quality = min(50, $item->quality + 3);
@@ -66,13 +66,12 @@ final class Company
     private function updateConjured($item)
     {
         $item->sellIn--;
-        // Conjured items degrade in quality twice as fast as normal items
+
         $item->quality -= 2;
-        // Make sure quality is never negative
+
         $item->quality = max(0, $item->quality);
 
         if ($item->sellIn < 0) {
-            // Quality degrades twice as fast after sellIn has passed
             $item->quality -= 2;
             $item->quality = max(0, $item->quality);
         }
@@ -81,11 +80,11 @@ final class Company
     private function updateNormalItem($item)
     {
         $item->sellIn--;
-        // Normal items degrade in quality
+
         $item->quality = max(0, $item->quality - 1);
 
         if ($item->sellIn < 0) {
-            // Quality degrades twice as fast after sellIn has passed
+
             $item->quality = max(0, $item->quality - 1);
         }
     }
