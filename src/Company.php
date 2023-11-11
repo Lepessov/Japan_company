@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Company;
 
+use App\Factory\ItemFactory;
+
 final class Company
 {
     /**
@@ -14,54 +16,77 @@ final class Company
     ) {
     }
 
-    public function updateQuality(): void
+    public function updateQuality()
     {
         foreach ($this->items as $item) {
-            if ($item->name != 'Aged Brie' and $item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                if ($item->quality > 0) {
-                    if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                        $item->quality = $item->quality - 1;
-                    }
-                }
+            $itemName = $item->name;
+
+            if (strpos($itemName, 'Sulfuras') !== false) {
+                continue;
+            } elseif (strpos($itemName, 'Backstage passes') !== false) {
+                $this->updateBackstagePasses($item);
+            } elseif ($itemName == 'Aged Brie') {
+                $this->updateAgedBrie($item);
+            } elseif ($itemName == 'Conjured') {
+                $this->updateConjured($item);
             } else {
-                if ($item->quality < 50) {
-                    $item->quality = $item->quality + 1;
-                    if ($item->name == 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->sellIn < 11) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                        if ($item->sellIn < 6) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                    }
-                }
+                $this->updateNormalItem($item);
             }
+            
+        }
+    }
 
-            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                $item->sellIn = $item->sellIn - 1;
-            }
+    private function updateAgedBrie($item)
+    {
+        $item->sellIn--;
+        $item->quality = min(50, $item->quality + 1);
 
-            if ($item->sellIn < 0) {
-                if ($item->name != 'Aged Brie') {
-                    if ($item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->quality > 0) {
-                            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                                $item->quality = $item->quality - 1;
-                            }
-                        }
-                    } else {
-                        $item->quality = $item->quality - $item->quality;
-                    }
-                } else {
-                    if ($item->quality < 50) {
-                        $item->quality = $item->quality + 1;
-                    }
-                }
-            }
+        if ($item->sellIn < 0) {
+            // Quality increases twice as fast after sellIn has passed
+            $item->quality = min(50, $item->quality + 1);
+        }
+    }
+
+    private function updateBackstagePasses($item)
+    {
+        $item->sellIn--;
+
+        if ($item->sellIn < 0) {
+            // Quality drops to 0 after the concert
+            $item->quality = 0;
+        } elseif ($item->sellIn <= 5) {
+            $item->quality = min(50, $item->quality + 3);
+        } elseif ($item->sellIn <= 10) {
+            $item->quality = min(50, $item->quality + 2);
+        } else {
+            $item->quality = min(50, $item->quality + 1);
+        }
+    }
+
+    private function updateConjured($item)
+    {
+        $item->sellIn--;
+        // Conjured items degrade in quality twice as fast as normal items
+        $item->quality -= 2;
+        // Make sure quality is never negative
+        $item->quality = max(0, $item->quality);
+
+        if ($item->sellIn < 0) {
+            // Quality degrades twice as fast after sellIn has passed
+            $item->quality -= 2;
+            $item->quality = max(0, $item->quality);
+        }
+    }
+
+    private function updateNormalItem($item)
+    {
+        $item->sellIn--;
+        // Normal items degrade in quality
+        $item->quality = max(0, $item->quality - 1);
+
+        if ($item->sellIn < 0) {
+            // Quality degrades twice as fast after sellIn has passed
+            $item->quality = max(0, $item->quality - 1);
         }
     }
 }

@@ -24,7 +24,7 @@ $items = [
 
 $app = new Company($items);
 
-$days = 2;
+$days = 31;
 if ((is_countable($argv) ? count($argv) : 0) > 1) {
     $days = (int) $argv[1];
 }
